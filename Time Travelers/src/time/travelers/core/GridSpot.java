@@ -14,14 +14,14 @@ public class GridSpot {
 		this.terrain = t;
 	}
 	
-	public boolean canTraverse(Traversal t) {
+	/*public boolean canTraverse(Traversal t) {
 		boolean ret = t.canTraverse(t);
 		if(this.hasTerrainObject())
 			ret &= terrainObj.canTraverse(t);
 		if(this.hasEntity())
 			ret &= this.entity.canTraverse(t);
 		return ret;
-	}
+	}*/
 	
 	public double getTraversalCost() {
 		return terrain.getTraversalCost();
