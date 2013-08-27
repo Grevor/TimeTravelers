@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import time.travelers.event.Event;
 
-public class GridSpot {
+public class Tile {
 	Terrain terrain;
 	GameObject terrainObj;
 	GameObject entity;
 	ArrayList<Event> e;
 	
-	public GridSpot(Terrain t) {
+	public Tile(Terrain t) {
 		this.terrain = t;
 	}
 	

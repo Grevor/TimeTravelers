@@ -8,17 +8,17 @@ import time.travelers.graphics.Renderable;
 
 public class Map {
 
-	private GridSpot[][] mapGrid;
+	private Tile[][] mapGrid;
 	
 	public Map(int x, int y) {
-		mapGrid = new GridSpot[x][y];
+		mapGrid = new Tile[x][y];
 	}
 	
 	public void recreateGridSpot(int x, int y, Terrain t) {
 		if(x >= mapGrid.length || y >= mapGrid[0].length)
 			return;
 		else
-			mapGrid[x][y] = new GridSpot(t);
+			mapGrid[x][y] = new Tile(t);
 	}
 	
 	public ArrayList<Renderable> getRenderables(int x, int y, int w, int h) {

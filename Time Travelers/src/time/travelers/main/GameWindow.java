@@ -1,12 +1,17 @@
 package time.travelers.main;
 
+import java.util.ArrayList;
+
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 
+import time.travelers.core.GameObject;
+import time.travelers.core.GameObject.Direction;
 import time.travelers.core.Map;
 import time.travelers.core.Terrain;
 import time.travelers.graphics.Camera2D;
 import time.travelers.graphics.GraphicsEngine;
+import time.travelers.graphics.Renderable;
 import time.travelers.util.Loader;
 
 @SuppressWarnings("serial")
@@ -19,6 +24,7 @@ public class GameWindow extends JFrame {
 	private GraphicsEngine graphics;
 	private Map currentMap;
 	private Camera2D camera;
+	private GameObject gameObject;
 	
 	public GameWindow() {
 		
@@ -41,7 +47,11 @@ public class GameWindow extends JFrame {
 		this.setResizable(false);
 		this.add(canvas);
 		
-		graphics.switchRenderList(currentMap.getRenderables(2, 2, 5, 5));
+		//graphics.switchRenderList(currentMap.getRenderables(2, 2, 5, 5));
+		gameObject = new GameObject(graphics.getTextureBatch().getTexture(0), true, 0, 0);
+		ArrayList<Renderable> test = new ArrayList<Renderable>();
+		test.add(gameObject);
+		graphics.switchRenderList(test);
 		graphics.startRendering();
 		this.setVisible(true);
 	}
@@ -50,6 +60,11 @@ public class GameWindow extends JFrame {
 		graphics.updateAnimations(timeDelta);
 		tickCheck++;
 		if(tickCheck % 50 == 0)
-			graphics.switchRenderList(currentMap.getRenderables(0, 0, Math.min(10, tickCheck/50), Math.min(10, tickCheck/50)));
+		{
+			gameObject.Move(Direction.Down);
+			gameObject.Move(Direction.Right);
+		}
+			//graphics.switchRenderList(currentMap.getRenderables(0, 0, Math.min(10, tickCheck/50), Math.min(10, tickCheck/50)));
+			
 	}
 }

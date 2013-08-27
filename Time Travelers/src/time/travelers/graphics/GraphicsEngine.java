@@ -63,6 +63,11 @@ public class GraphicsEngine implements GLEventListener
 		animator.stop();
 	}
 	
+	public TextureBatch getTextureBatch()
+	{
+		return this.batch;
+	}
+	
 	/**
 	 * Gets the pointer to the camera object of this GraphicsEngine. 
 	 * Any change made to this object will reflect to the rendered graphics.
