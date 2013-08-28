@@ -9,6 +9,7 @@ import time.travelers.core.GameObject;
 import time.travelers.core.GameObject.Direction;
 import time.travelers.core.Map;
 import time.travelers.core.Terrain;
+import time.travelers.core.Unit;
 import time.travelers.graphics.Camera2D;
 import time.travelers.graphics.GraphicsEngine;
 import time.travelers.graphics.Renderable;
