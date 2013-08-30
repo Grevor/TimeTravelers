@@ -8,6 +8,8 @@ import java.util.Hashtable;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -156,6 +158,9 @@ public class AudioFile {
 		private int loopsRemaining;
 		private long loopStart, loopEnd;
 		private SourceDataLine playingLine;
+		private int bufferSize;
+		private boolean isRunning = true;
+		private int currentByte = 0;
 		
 		public AsyncPlay(byte[] audioData, long loopStart, long loopEnd) {
 			this.audioData = audioData;
@@ -164,8 +169,66 @@ public class AudioFile {
 		}
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
+			try {
+				playingLine = AudioSystem.getSourceDataLine(format);
+				bufferSize = playingLine.getBufferSize();
+			} catch (LineUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//Sets the gain.
+			this.setVolume(output.getTotalGain() + gain);
 			
+			while(isRunning) {
+				int written = playingLine.write(audioData, currentByte, this.getBytesToRead());
+				if(written == -1 || audioData.length - currentByte == 0 || currentByte == loopEnd) {
+					if(this.loopsRemaining > 0) {
+						this.setupForLoop();
+						continue;
+					}
+				}
+				currentByte += written;
+				try {this.sleep(getSleepTime());}
+				catch (InterruptedException e) { }
+			} //!isRunning
+			
+			this.cleanUp();
+		}
+		
+		private int getBytesToRead() {
+			if(loopEnd - currentByte <= bufferSize)
+				return (int) (loopEnd - currentByte);
+			else
+				return bufferSize;
+		}
+		
+		private void setupForLoop() {
+			this.currentByte = (int) this.loopStart;
+			this.loopsRemaining--;
+		}
+		
+		private int getSleepTime() {
+			return (int) (1000 * playingLine.available() / (playingLine.getFormat().getFrameRate() * format.getFrameSize()));
+		}
+		
+		private boolean loopEnabled() {
+			return loopEnd != loopStart;
+		}
+		
+		public synchronized void setVolume(double newVolume) {
+			((FloatControl)playingLine.getControl(FloatControl.Type.MASTER_GAIN)).setValue((float)MathUtil.getValueFittingBounds(newVolume, AudioBus.maxGain, AudioBus.minGain));
+		}
+		
+		private synchronized void cleanUp() {
+			if(this.hasOpenPlayingLine()) {
+				playingLine.stop();
+				playingLine.close();
+			}
+			currentlyPlaying.remove(this);
+		}
+		
+		private boolean hasOpenPlayingLine() {
+			return this.playingLine != null && this.playingLine.isOpen();
 		}
 	}
 	
