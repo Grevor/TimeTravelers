@@ -1,14 +1,20 @@
 package time.travelers.audio;
 
+import java.util.ArrayList;
+
 import time.travelers.util.MathUtil;
 
 public class AudioBus {
-	public static final double maxGain = 6, minGain = -80;
+	public static final double maxGain = 6, minGain = -80, mutedGain = -10000;
 	
+	/**
+	 * The static master-bus existing in every project. It is from this bus that all sound originate.
+	 */
 	private static AudioBus master = new AudioBus(0, true);
 	private double gain;
 	private boolean isMuted = false;
 	private AudioBus output;
+	private ArrayList<AudioBus> inputs = new ArrayList<AudioBus>(20);
 	
 	/**
 	 * Creates a new AudioBus outputting to the master-bus.
@@ -29,15 +35,17 @@ public class AudioBus {
 	 * @param gain - The initial gain of this AudioBus.
 	 */
 	public AudioBus(AudioBus output, double gain) {
-		if(this.output == null)
+		if(output == null)
 			output = AudioBus.getMasterBus();
 		
 		this.output = output;
+		output.addAsInputBus(this);
 		this.setGain(gain);
 	}
 	
 	/**
-	 * Used ONLY to create the master-bus.
+	 * Used ONLY to create the master-bus.<br>
+	 * DO NOT USE THIS FOR ANYTHING ELSE.
 	 */
 	private AudioBus(double gain, boolean foo) {
 		this.output = null;
@@ -46,12 +54,16 @@ public class AudioBus {
 	
 	/**
 	 * Gets the total gain from this bus-chain, starting from this bus, and stepping through to the master bus. 
-	 * Please note that this value will not be clamped, and for safe useage this value must be clamped to fit the 
+	 * Please note that this value will not be clamped, and for safe usage this value must be clamped to fit the 
 	 * Audio Implementations min-max values.
 	 * @return
 	 * The total gain from the master-bus to this bus.
+	 * If this, or any higher-level bus is muted, returns {@code mutedGain}.
 	 */
 	public double getTotalGain() {
+		if(this.isInMutedChain())
+			return AudioBus.mutedGain;
+		
 		if(this.isMaster())
 			return this.gain;
 		else
@@ -90,7 +102,12 @@ public class AudioBus {
 			return;
 		if(newOutput == null)
 			newOutput = AudioBus.getMasterBus();
-		this.output = newOutput;
+		
+		if(this.output != newOutput) {
+			this.output.removeAsInputBus(this);
+			this.output = newOutput;
+			newOutput.addAsInputBus(this);
+		}
 	}
 	
 	public AudioBus getOutput() {
@@ -104,7 +121,10 @@ public class AudioBus {
 	 * @param newGain - The new gain of this AudioBus.
 	 */
 	public void setGain(double newGain) {
-		this.gain = MathUtil.getValueFittingBounds(newGain, maxGain, minGain);
+		if(this.gain != newGain) {
+			this.gain = MathUtil.getValueFittingBounds(newGain, maxGain, minGain);
+			propagateChange();
+		}
 	}
 	
 	public double getGain() {
@@ -112,13 +132,36 @@ public class AudioBus {
 	}
 	
 	public void setMute(boolean b) {
-		this.isMuted = b;
+		if(b != this.isMuted) {
+			this.isMuted = b;
+			this.propagateChange();
+		}
 	}
 	
 	public boolean isMuted() {
 		return this.isMuted;
 	}
 	
+	//
+	// Private Methods
+	//
+	
+	private void addAsInputBus(AudioBus bus) {
+		if(!this.inputs.contains(bus))
+			this.inputs.add(bus);
+	}
+	
+	private void removeAsInputBus(AudioBus bus) {
+		this.inputs.remove(bus);
+	}
+	
+	/**
+	 * Propagates a change to this bus down to child buses, and ultimately to playing sounds.
+	 */
+	protected void propagateChange() {
+		for(AudioBus a : this.inputs)
+			a.propagateChange();
+	}
 	
 	
 	//
