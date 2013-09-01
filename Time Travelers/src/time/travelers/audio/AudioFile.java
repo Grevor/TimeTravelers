@@ -401,6 +401,7 @@ public class AudioFile extends AudioBus {
 	//
 	// Static functions
 	//
+	
 	/**
 	 * Attempts to free memory used by any non-playing audio. 
 	 * This may cause slight lag if sounds are needed later, as the computer have to load resources. 
