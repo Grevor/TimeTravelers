@@ -423,15 +423,5 @@ public class AudioFile extends AudioBus {
 		if(!allAudioFiles.contains(a))
 			allAudioFiles.add(a);
 	}
-	
-	
-	//For testing.
-	public static void main(String args[]) throws InterruptedException {
-		AudioFile f = new AudioFile("C:/Users/Grevor/Desktop/Revised Audio/Epic Theme n.wav");
-		f.playLooping(0);
-		Thread.sleep(6000);
-		f.playLooping(0);
-		AudioBus.getMasterBus().setGain(-70);
-	}
 }
 
