@@ -173,8 +173,8 @@ public class AudioFile {
 				playingLine = AudioSystem.getSourceDataLine(format);
 				bufferSize = playingLine.getBufferSize();
 			} catch (LineUnavailableException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return;
 			}
 			//Sets the gain.
 			this.setVolume(output.getTotalGain() + gain);
